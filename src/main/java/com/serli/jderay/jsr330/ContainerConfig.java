@@ -3,6 +3,7 @@
  */
 package com.serli.jderay.jsr330;
 
+import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
 import com.serli.jderay.jsr330.exceptions.DoesNotImplementException;
 import com.serli.jderay.jsr330.exceptions.IsNotScopeException;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
@@ -15,7 +16,7 @@ public class ContainerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ContainerConfig.class);
 
-    public void configure() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException  {
+    public void configure() throws AmbiguousImplementationsException, DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException  {
     }
 
     public BindedClass bind(Class<?> clazz) throws NotAnInterfaceException {
@@ -61,7 +62,7 @@ public class ContainerConfig {
             InheritanceManager.addInheritance(clazzToImpl, clazzImpl, qualifiers);
         }
         
-        public void withScope( Class<?> singleton ) throws IsNotScopeException, InstantiationException, IllegalAccessException, NoImplementationException {
+        public void withScope( Class<?> singleton ) throws IsNotScopeException, InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException {
             if ( singleton.equals( Singleton.class ) )
                 InheritanceManager.setSingleton( clazzToImpl, qualifiers );
             else

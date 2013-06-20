@@ -4,8 +4,8 @@
 
 package com.serli.jderay.jsr330;
 
+import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,15 +36,23 @@ public class InheritanceManager {
         return false;
     }
 
-    static Inheritance getInheritance(Class<?> clazzToImpl, List<Class<?>> qualifiers) throws NoImplementationException {
+    static Inheritance getInheritance(Class<?> clazzToImpl, List<Class<?>> qualifiers) throws NoImplementationException, AmbiguousImplementationsException {
+        Inheritance res = null;
+        
         for ( Inheritance inheritance : inheritances ) {
             if ( inheritance.is(clazzToImpl) && inheritance.isQualifieredBy( qualifiers ) )
-                return inheritance;
+                if ( res == null ) 
+                    res = inheritance;
+                else
+                    throw new AmbiguousImplementationsException( res.toString(), inheritance.toString() );
         }
-        throw new NoImplementationException( clazzToImpl.getCanonicalName() );
+        if ( res != null )
+            return res;
+        else
+            throw new NoImplementationException( clazzToImpl.getCanonicalName() );
     }
 
-    static <T> void setSingleton(Class<?> clazzToImpl, Class<?>[] qualifiers) throws NoImplementationException, InstantiationException, IllegalAccessException {
+    static <T> void setSingleton(Class<?> clazzToImpl, Class<?>[] qualifiers) throws NoImplementationException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
         List<Class<?>> listQualifiers;
                 
         if (qualifiers != null) 
