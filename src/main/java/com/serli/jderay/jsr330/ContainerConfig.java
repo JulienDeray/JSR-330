@@ -3,14 +3,11 @@
  */
 package com.serli.jderay.jsr330;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ContainerConfig {
 
-    private static Map<Class<?>, Class<?>> inheritances = new HashMap<>();
     private static final Logger logger = LoggerFactory.getLogger(ContainerConfig.class);
 
     public void configure() {
@@ -20,25 +17,35 @@ public class ContainerConfig {
         return new BindedClass<>(clazz);
     }
 
-    static void addInheritance(Class<?> clazz, Class<?> clazzImpl) {
-        logger.info("Inheritance added : {} ---> {}", clazz.toString(), clazzImpl.toString());
-        inheritances.put(clazz, clazzImpl);
+    public static class QualifieredClass<T> {
+
+        Class<?> clazzToImpl;
+        Class<?>[] qualifiers;
+
+        public QualifieredClass(Class<?> clazzToImpl, Class<?>[] qualifiers) {
+            this.clazzToImpl = clazzToImpl;
+            this.qualifiers = qualifiers;
+        }
+        
+        public <K extends T> void to(Class<K> clazzImpl) {
+            InheritanceManager.addInheritance(clazzToImpl, clazzImpl, qualifiers);
+        }
     }
 
     public class BindedClass<T> {
 
-        Class<T> clazz;
+        Class<T> clazzToImpl;
 
         public BindedClass(Class<T> clazz) {
-            this.clazz = clazz;
+            this.clazzToImpl = clazz;
         }
 
-        public <K extends T> void to(Class<K> clazzImpl) {
-            ContainerConfig.addInheritance(clazz, clazzImpl);
+        public <K extends T> void to(Class<K> implementation) {
+            InheritanceManager.addInheritance(clazzToImpl, implementation);
         }
-    }
 
-    public Map<Class<?>, Class<?>> getInheritances() {
-        return inheritances;
+        public QualifieredClass annotatedWith(Class<?>... qualifiers) {
+            return new QualifieredClass<>( clazzToImpl, qualifiers );
+        }
     }
 }

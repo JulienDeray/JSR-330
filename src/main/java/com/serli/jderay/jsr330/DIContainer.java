@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 public class DIContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(DIContainer.class);
-    private Map<Class<?>, Class<?>> inheritances;
     
     public static DIContainer createWith( ContainerConfig containerConfig ) {
         DIContainer container = new DIContainer();
@@ -27,9 +26,9 @@ public class DIContainer {
     }
     
     private void init(ContainerConfig containerConfig) {
-        logger.info("--- Initialisationi of Dependencie Injection Container ---");
+        logger.info("--------------------- Initialisation of Dependencie Injection Container ---------------------");
         containerConfig.configure();
-        inheritances = containerConfig.getInheritances();
+        logger.info("---------------------------------------------------------------------------------------------");
     }
     
     public <T> T getInstance( Class<T> clazz ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException {
@@ -57,22 +56,29 @@ public class DIContainer {
         for (Field field : fields) {
             
             Class<?> clazzToImpl = field.getType();
-            
-            if ( inheritances.containsKey( clazzToImpl ) ) {
-                Class<?> impl = inheritances.get( clazzToImpl );
-                
-                field.setAccessible(true);
-                
-                logger.info("@Inject : {} --> {}", clazzToImpl, impl);
+            Class<?> impl = InheritanceManager.get( clazzToImpl, getQualifiers( field ) );
 
-                field.set(t, getInstance( impl ) );
-                field.setAccessible(false);
-            } else {
-                throw new NoImplementationException( clazzToImpl.getCanonicalName() );
-            }
+            field.setAccessible(true);
+
+            logger.info("@Inject : {} --> {}", clazzToImpl, impl);
+
+            field.set(t, getInstance( impl ) );
+            field.setAccessible(false);
         }
 
         return t;
+    }
+    
+    private List<Class<?>> getQualifiers( Field field ) {
+        Annotation[] annotations = field.getDeclaredAnnotations();
+        List<Class<?>> qualifiers = new ArrayList<>();
+
+        for (Annotation annotation : annotations) {
+            if ( !(annotation instanceof Inject) ) {
+                qualifiers.add( annotation.annotationType() );
+            }
+        }
+        return qualifiers;
     }
     
 }
