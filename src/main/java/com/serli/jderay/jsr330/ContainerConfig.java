@@ -47,7 +47,7 @@ public class ContainerConfig {
 
         public void to(Class<?> implementation) throws DoesNotImplementException {
             if ( isAimplementation( implementation ) )
-            InheritanceManager.addInheritance(clazzToImpl, implementation);
+                InheritanceManager.addInheritance(clazzToImpl, implementation);
         }
 
         public QualifieredClass annotatedWith(Class<?>... qualifiers) {

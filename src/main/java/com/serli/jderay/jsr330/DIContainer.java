@@ -4,7 +4,9 @@
 
 package com.serli.jderay.jsr330;
 
+import com.serli.jderay.jsr330.exceptions.DoesNotImplementException;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
+import com.serli.jderay.jsr330.exceptions.NotAnInterfaceException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -19,13 +21,13 @@ public class DIContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(DIContainer.class);
     
-    public static DIContainer createWith( ContainerConfig containerConfig ) {
+    public static DIContainer createWith( ContainerConfig containerConfig ) throws DoesNotImplementException, NotAnInterfaceException {
         DIContainer container = new DIContainer();
         container.init( containerConfig );
         return container;
     }
     
-    private void init(ContainerConfig containerConfig) {
+    private void init(ContainerConfig containerConfig) throws DoesNotImplementException, NotAnInterfaceException {
         logger.info("--------------------- Initialisation of Dependencie Injection Container ---------------------");
         containerConfig.configure();
         logger.info("---------------------------------------------------------------------------------------------");

@@ -36,9 +36,8 @@ public class InheritanceManager {
 
     static Class<?> get(Class<?> clazzToImpl, List<Class<?>> qualifiers) throws NoImplementationException {
         for ( Inheritance inheritance : inheritances ) {
-            if ( inheritance.is(clazzToImpl) )
-                if ( inheritance.isQualifieredBy( qualifiers ) )
-                    return inheritance.getImplementation();
+            if ( inheritance.is(clazzToImpl) && inheritance.isQualifieredBy( qualifiers ) )
+                return inheritance.getImplementation();
         }
         throw new NoImplementationException( clazzToImpl.getCanonicalName() );
     }

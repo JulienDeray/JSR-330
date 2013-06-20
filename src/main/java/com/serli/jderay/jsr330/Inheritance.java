@@ -28,14 +28,7 @@ class Inheritance {
     }
 
     boolean is(Class<?> clazzToImpl) {
-        if ( clazzToImpl.equals(toImpl) )
-            return true;
-        else
-            return false;
-    }
-
-    public Class<?> getImplementation() {
-        return implementation;
+        return clazzToImpl.equals(toImpl) ? true : false;
     }
 
     boolean isQualifieredBy(List<Class<?>> qualifiers) {
@@ -47,10 +40,11 @@ class Inheritance {
             Set<Object> set2 = new HashSet<>();
             set2.addAll(this.qualifiers);
             
-            if ( set1.equals(set2) )
-                return true;
-            else
-                return false;
+            return set1.equals(set2) ? true : false;
         }
+    }
+
+    public Class<?> getImplementation() {
+        return implementation;
     }
 }
