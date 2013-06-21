@@ -18,19 +18,14 @@ public class InheritanceManager {
     private static final Logger logger = LoggerFactory.getLogger(InheritanceManager.class);
     private static List<Inheritance> inheritances = new ArrayList<>();
     
-    static void addInheritance(Class<?> clazz, Class<?> impl ) {
-        inheritances.add( new Inheritance(clazz, impl) );
-        logger.info("Inheritance added : {} ---> {}", clazz.toString(), impl.toString());
-    }
-    
     static void addInheritance(Class<?> clazz, Class<?> impl, Class<?>... qualifiers ) {
         inheritances.add( new Inheritance(clazz, impl, qualifiers));
-        logger.info("Inheritance added (with annotations) : {} ---> {}", clazz.toString(), impl.toString());
+        logger.info("Inheritance added : {} ---> {}", clazz.toString(), impl.toString());
     }
     
     static void addInheritance(Class<?> clazz, Class<?> impl, String name, Class<?>... qualifiers ) {
         inheritances.add( new Inheritance(clazz, impl, qualifiers, name) );
-        logger.info("Inheritance added (named \"" + name + "\") : {} ---> {}", clazz.toString(), impl.toString());
+        logger.info("Inheritance added : {} ---> {}", clazz.toString(), impl.toString());
     }
     
     static boolean contains(Class<?> clazzToImpl) {
