@@ -68,11 +68,11 @@ class Inheritance<T> {
         this.singletonInstance = implementation.newInstance();
     }
     
-    public boolean isSingleton() {
+    boolean isSingleton() {
         return this.isSingleton;
     }
 
-    public T getSingletonInstance() {
+    T getSingletonInstance() {
         return singletonInstance;
     }
     
