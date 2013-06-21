@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
     
@@ -65,7 +66,7 @@ public class DIContainer {
         for (Field field : fields) {
             
             Class<?> clazzToImpl = field.getType();
-            Inheritance impl = InheritanceManager.getInheritance( clazzToImpl, getQualifiers( field ) );
+            Inheritance impl = InheritanceManager.getInheritance( clazzToImpl, getQualifiers( field ), getName( field ) );
             
             field.setAccessible(true);
            
@@ -88,6 +89,15 @@ public class DIContainer {
             }
         }
         return qualifiers;
+    }
+    
+    private String getName( Field field ) {
+        try {
+            return field.getAnnotation(Named.class).value();
+        }
+        catch( NullPointerException e ) {
+            return "";
+        }
     }
     
 }

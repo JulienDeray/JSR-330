@@ -17,6 +17,7 @@ class Inheritance<T> {
     private List<Class<?>> qualifiers;
     private boolean isSingleton;
     private T singletonInstance;
+    private String name;
 
     public Inheritance(Class<?> clazz, Class<T> implementation) {
         this.toImpl = clazz;
@@ -24,13 +25,19 @@ class Inheritance<T> {
         this.qualifiers = new ArrayList<>();
         this.isSingleton = false;
         this.singletonInstance = null;
+        this.name = "";
     }
     
-    public Inheritance(Class<?> clazz, Class<T> implementation, Class<?>[] annotations) {
+    public Inheritance(Class<?> clazz, Class<T> implementation, Class<?>[] qualifiers) {
         this(clazz, implementation);
-        this.qualifiers = new ArrayList<>(Arrays.asList(annotations));
+        this.qualifiers = new ArrayList<>(Arrays.asList(qualifiers));
     }
 
+    public Inheritance(Class<?> clazz, Class<T> implementation, Class<?>[] qualifiers, String name) {
+        this(clazz, implementation, qualifiers);
+        this.name = name;
+    }
+    
     boolean is(Class<?> clazzToImpl) {
         return clazzToImpl.equals(toImpl) ? true : false;
     }
@@ -48,7 +55,11 @@ class Inheritance<T> {
         }
     }
 
-    public Class<T> getImplementation() {
+    boolean isNamedAs(String name) {
+        return name.equals(this.name) ? true : false;
+    }
+    
+    Class<T> getImplementation() {
         return implementation;
     }
 
@@ -69,5 +80,4 @@ class Inheritance<T> {
     public String toString() {
         return implementation.getName();
     }
-    
 }
