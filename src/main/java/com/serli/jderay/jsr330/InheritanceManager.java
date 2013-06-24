@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 class InheritanceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceManager.class);
-    private static List<Inheritance> inheritances = new ArrayList<>();
+    private static final List<Inheritance> inheritances = new ArrayList<>();
     
     static void addInheritance(Class<?> clazz, Class<?> impl, Class<?>... qualifiers ) {
         inheritances.add( new Inheritance(clazz, impl, qualifiers));
@@ -70,5 +70,9 @@ class InheritanceManager {
                     return true;
         }
        return false;
+    }
+    
+    static void reset() {
+        inheritances.clear();
     }
 }

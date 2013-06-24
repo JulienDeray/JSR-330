@@ -46,6 +46,11 @@ public class ConstructorInjectionTest extends TestCase {
         return new TestSuite( ConstructorInjectionTest.class );
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        DIContainer.reset();
+    }
+
     public void testSimpleInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
         ContainerConfig config = new ContainerConfig() {
             @Override

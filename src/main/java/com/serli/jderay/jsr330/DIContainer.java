@@ -141,4 +141,8 @@ public class DIContainer {
         else
             throw new MultipleConstructorsInjection();
     }
+    
+    public static void reset() {
+        InheritanceManager.reset();
+    }
 }
