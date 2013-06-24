@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class InheritanceManager {
+class InheritanceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceManager.class);
     private static List<Inheritance> inheritances = new ArrayList<>();

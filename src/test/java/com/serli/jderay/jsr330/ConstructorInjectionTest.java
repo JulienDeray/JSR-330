@@ -7,13 +7,14 @@ package com.serli.jderay.jsr330;
 import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
 import com.serli.jderay.jsr330.exceptions.DoesNotImplementException;
 import com.serli.jderay.jsr330.exceptions.IsNotScopeException;
+import com.serli.jderay.jsr330.exceptions.MultipleConstructorsInjection;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
 import com.serli.jderay.jsr330.exceptions.NotAnInterfaceException;
-import com.serli.jderay.moduletest1.MultiQualifiedInject;
-import com.serli.jderay.moduletest1.NamedInject;
-import com.serli.jderay.moduletest1.QualifiedInject;
-import com.serli.jderay.moduletest1.SimpleInject;
-import com.serli.jderay.moduletest1.SingletonInject;
+import com.serli.jderay.moduletest1.constructor.MultiQualifiedInject;
+import com.serli.jderay.moduletest1.constructor.NamedInject;
+import com.serli.jderay.moduletest1.constructor.QualifiedInject;
+import com.serli.jderay.moduletest1.constructor.SimpleInject;
+import com.serli.jderay.moduletest1.constructor.SingletonInject;
 import com.serli.jderay.moduletest1.annotations.LeJoliSingleton;
 import com.serli.jderay.moduletest1.annotations.Touch;
 import com.serli.jderay.moduletest1.annotations.Touch1;
@@ -24,6 +25,7 @@ import com.serli.jderay.moduletest2.impl.NameMultiTouchServiceImpl;
 import com.serli.jderay.moduletest2.impl.NameTouchServiceImpl;
 import com.serli.jderay.moduletest2.impl.NamedServiceImpl;
 import com.serli.jderay.moduletest2.impl.SingleServiceImpl;
+import java.lang.reflect.InvocationTargetException;
 import javax.inject.Singleton;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.Test;
@@ -34,17 +36,17 @@ import junit.framework.TestSuite;
  *
  * @author julien
  */
-public class NonRegressionTest extends TestCase {
+public class ConstructorInjectionTest extends TestCase {
     
-    public NonRegressionTest(String testName) {
+    public ConstructorInjectionTest(String testName) {
         super(testName);
     }
     
     public static Test suite() {
-        return new TestSuite( NonRegressionTest.class );
+        return new TestSuite( ConstructorInjectionTest.class );
     }
-    
-    public void testSimpleInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+
+    public void testSimpleInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -57,7 +59,7 @@ public class NonRegressionTest extends TestCase {
         assertEquals("Module 2 -> yes it works !", mt1.shootM2());
     }
     
-    public void testQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+    public void testQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -70,7 +72,7 @@ public class NonRegressionTest extends TestCase {
         assertEquals("Module 2 [Touchy Mod] -> yes it works !", mt1.shootMTouch());
     }
     
-    public void testDoubleQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+    public void testDoubleQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -83,7 +85,7 @@ public class NonRegressionTest extends TestCase {
         assertEquals("Module 2 [Multi Touchy Mod] -> yes it works !", mt1.shootMultiTouch());
     }
     
-    public void testSingletonInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+    public void testSingletonInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -96,7 +98,7 @@ public class NonRegressionTest extends TestCase {
         assertEquals("Module 2 [Singleton] -> yes it works ! [0]Module 2 [Singleton] -> yes it works ! [1]", mt1.shootSingleton());
     }
     
-    public void testNamedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+    public void testNamedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
