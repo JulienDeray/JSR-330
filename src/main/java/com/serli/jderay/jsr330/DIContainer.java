@@ -10,6 +10,7 @@ import com.serli.jderay.jsr330.exceptions.DoesNotImplementException;
 import com.serli.jderay.jsr330.exceptions.IsNotScopeException;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
 import com.serli.jderay.jsr330.exceptions.NotAnInterfaceException;
+import com.serli.jderay.jsr330.exceptions.StaticFieldException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -39,21 +40,21 @@ public class DIContainer {
         logger.info("---------------------------------------------------------------------------------------------");
     }
     
-    public <T> T getInstance( Class<T> clazz ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
+    public <T> T getInstance( Class<T> clazz ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
         T t = dynamicallyInstantiate( clazz );
         resolveSetterInjections( t );
         resolveFieldInjections( t );
         return t;
     }
 
-    private <T> T getInstance( Inheritance<T> impl ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
+    private <T> T getInstance( Inheritance<T> impl ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
         T t = impl.isSingleton() ? impl.getSingletonInstance() : dynamicallyInstantiate( impl.getImplementation() );
         resolveFieldInjections( t );
         resolveSetterInjections( t );
         return t;
     }
 
-    private <T> T dynamicallyInstantiate(Class<T> clazz) throws InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
+    private <T> T dynamicallyInstantiate(Class<T> clazz) throws InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
         Constructor[] constructors = clazz.getDeclaredConstructors();
         Constructor annotatedConstructor = getAnnotatedConstructor( constructors );
         if ( annotatedConstructor != null ) {
@@ -72,10 +73,13 @@ public class DIContainer {
             return clazz.newInstance();
     }
 
-    private <T> T resolveFieldInjections(T t) throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
+    private <T> T resolveFieldInjections(T t) throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
         List<Field> fieldsToInject = new ArrayList<>();
 
         for (Field field : t.getClass().getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic( field.getModifiers() )) {
+                throw new StaticFieldException();
+            }
             Annotation[] annotations = field.getDeclaredAnnotations();
 
             for (Annotation annotation : annotations) {
@@ -87,7 +91,7 @@ public class DIContainer {
         return injectFields(t, fieldsToInject);
     }
     
-    private <T> T resolveSetterInjections(T t) throws NoImplementationException, AmbiguousImplementationsException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
+    private <T> T resolveSetterInjections(T t) throws NoImplementationException, AmbiguousImplementationsException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
         for ( Method method : t.getClass().getDeclaredMethods() ) {
             if ( method.getName().startsWith("set") && method.getGenericParameterTypes().length == 1 && method.getGenericReturnType() == void.class ) {
                 for ( Annotation annotation : method.getAnnotations() )
@@ -106,7 +110,7 @@ public class DIContainer {
         return t;
     }
     
-    private <T> T injectFields(T t, List<Field> fields) throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
+    private <T> T injectFields(T t, List<Field> fields) throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
         for (Field field : fields) {
             
             Class<?> clazzToImpl = field.getType();
