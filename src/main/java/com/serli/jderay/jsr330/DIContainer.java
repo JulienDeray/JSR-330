@@ -14,6 +14,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
@@ -40,6 +41,7 @@ public class DIContainer {
     
     public <T> T getInstance( Class<T> clazz ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
         T t = dynamicallyInstantiate( clazz );
+        resolveSetterInjections( t );
         resolveFieldInjections( t );
         return t;
     }
@@ -47,6 +49,7 @@ public class DIContainer {
     private <T> T getInstance( Inheritance<T> impl ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
         T t = impl.isSingleton() ? impl.getSingletonInstance() : dynamicallyInstantiate( impl.getImplementation() );
         resolveFieldInjections( t );
+        resolveSetterInjections( t );
         return t;
     }
 
@@ -70,18 +73,36 @@ public class DIContainer {
     }
 
     private <T> T resolveFieldInjections(T t) throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
-        List<Field> fields = new ArrayList<>();
+        List<Field> fieldsToInject = new ArrayList<>();
 
         for (Field field : t.getClass().getDeclaredFields()) {
             Annotation[] annotations = field.getDeclaredAnnotations();
 
             for (Annotation annotation : annotations) {
                 if (annotation instanceof Inject) {
-                    fields.add(field);
+                    fieldsToInject.add(field);
                 }
             }
         }
-        return injectFields(t, fields);
+        return injectFields(t, fieldsToInject);
+    }
+    
+    private <T> T resolveSetterInjections(T t) throws NoImplementationException, AmbiguousImplementationsException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection {
+        for ( Method method : t.getClass().getDeclaredMethods() ) {
+            if ( method.getName().startsWith("set") && method.getGenericParameterTypes().length == 1 && method.getGenericReturnType() == void.class ) {
+                for ( Annotation annotation : method.getAnnotations() )
+                    if ( annotation instanceof Inject ) {
+                        Annotation[] parameterAnnotations = method.getParameterAnnotations()[0];
+                        Class toImpl = method.getParameterTypes()[0];
+
+                        Inheritance impl = InheritanceManager.getInheritance( toImpl, getQualifiers( parameterAnnotations ), getName( parameterAnnotations ) );
+                        Object[] args = { getInstance( impl ) };
+
+                        method.invoke(t, args);
+                    }
+            }
+        }
+        return t;
     }
     
     private <T> T injectFields(T t, List<Field> fields) throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection {
