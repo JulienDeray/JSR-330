@@ -97,7 +97,8 @@ public class DIContainer {
 
                         Inheritance impl = InheritanceManager.getInheritance( toImpl, getQualifiers( parameterAnnotations ), getName( parameterAnnotations ) );
                         Object[] args = { getInstance( impl ) };
-
+                        
+                        logger.info("@Inject on setter : {}", method.toString());
                         method.invoke(t, args);
                     }
             }
