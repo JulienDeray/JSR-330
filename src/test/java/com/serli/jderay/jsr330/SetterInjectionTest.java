@@ -10,7 +10,7 @@ import com.serli.jderay.jsr330.exceptions.IsNotScopeException;
 import com.serli.jderay.jsr330.exceptions.MultipleConstructorsInjection;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
 import com.serli.jderay.jsr330.exceptions.NotAnInterfaceException;
-import com.serli.jderay.jsr330.exceptions.StaticFieldException;
+import com.serli.jderay.jsr330.exceptions.FinalFieldException;
 import com.serli.jderay.moduletest1.setter.MultiQualifiedInject;
 import com.serli.jderay.moduletest1.setter.NamedInject;
 import com.serli.jderay.moduletest1.setter.QualifiedInject;
@@ -31,7 +31,6 @@ import com.serli.jderay.moduletest2.impl.StaticServiceImpl;
 import java.lang.reflect.InvocationTargetException;
 import javax.inject.Singleton;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -55,7 +54,7 @@ public class SetterInjectionTest extends TestCase {
         DIContainer.reset();
     }
 
-    public void testSimpleInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
+    public void testSimpleInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -68,7 +67,20 @@ public class SetterInjectionTest extends TestCase {
         assertEquals("Module 2 -> yes it works !", mt1.shootM2());
     }
     
-    public void testQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
+    public void testStaticInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException {
+        ContainerConfig config = new ContainerConfig() {
+            @Override
+            public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+                bind(Name2Service.class).to(StaticServiceImpl.class);
+            }
+        };
+        DIContainer container = DIContainer.createWith(config);
+        StaticInject mt1 = container.getInstance(StaticInject.class);
+        
+        assertEquals("Module 2 [Static] -> Yes it works !", mt1.shootStatic());
+    }
+    
+    public void testQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -81,7 +93,7 @@ public class SetterInjectionTest extends TestCase {
         assertEquals("Module 2 [Touchy Mod] -> yes it works !", mt1.shootMTouch());
     }
     
-    public void testDoubleQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
+    public void testDoubleQualifedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -94,7 +106,7 @@ public class SetterInjectionTest extends TestCase {
         assertEquals("Module 2 [Multi Touchy Mod] -> yes it works !", mt1.shootMultiTouch());
     }
     
-    public void testSingletonInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
+    public void testSingletonInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -107,7 +119,7 @@ public class SetterInjectionTest extends TestCase {
         assertEquals("Module 2 [Singleton] -> yes it works ! [0]Module 2 [Singleton] -> yes it works ! [1]", mt1.shootSingleton());
     }
     
-    public void testNamedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
+    public void testNamedInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException {
         ContainerConfig config = new ContainerConfig() {
             @Override
             public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
@@ -120,21 +132,4 @@ public class SetterInjectionTest extends TestCase {
         assertEquals("Module 2 [Named : \"CocoLasticot\"] -> yes it works !", mt1.shootCocoLasticot());
     }
     
-    public void testStaticException() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, StaticFieldException {
-        ContainerConfig config = new ContainerConfig() {
-            @Override
-            public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
-                bind(Name2Service.class).to(StaticServiceImpl.class);
-            }
-        };
-        DIContainer container = DIContainer.createWith(config);
-        
-        try {
-            StaticInject mt1 = container.getInstance(StaticInject.class);
-            fail();
-        }
-        catch(StaticFieldException e) {
-            assertEquals(new StaticFieldException().getMessage(), e.getMessage());
-        }
-    }
 }
