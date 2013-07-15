@@ -4,28 +4,22 @@
 
 package com.serli.jderay.jsr330;
 
+import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
 import com.serli.jderay.jsr330.exceptions.DoesNotImplementException;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
 import com.serli.jderay.jsr330.exceptions.NotAnInterfaceException;
-import java.security.Provider;
-import javax.inject.Inject;
-import org.atinject.tck.auto.Car;
-import org.atinject.tck.auto.Convertible;
-import org.atinject.tck.auto.Drivers;
-import org.atinject.tck.auto.DriversSeat;
-import org.atinject.tck.auto.Engine;
-import org.atinject.tck.auto.FuelTank;
-import org.atinject.tck.auto.Seat;
-import org.atinject.tck.auto.Tire;
-import org.atinject.tck.auto.V8Engine;
+import org.atinject.tck.auto.*;
 import org.atinject.tck.auto.accessories.Cupholder;
 import org.atinject.tck.auto.accessories.SpareTire;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 
 public class TckConfig extends ContainerConfig {
 
     @Override
-    public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException {
+    public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IllegalAccessException, AmbiguousImplementationsException, InstantiationException, NoSuchMethodException {
         
         bind(Seat.class).annotatedWith(Drivers.class).to(DriversSeat.class);
         

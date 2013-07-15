@@ -3,15 +3,13 @@
  */
 package com.serli.jderay.jsr330;
 
-import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
-import com.serli.jderay.jsr330.exceptions.DoesNotImplementException;
-import com.serli.jderay.jsr330.exceptions.IsNotScopeException;
-import com.serli.jderay.jsr330.exceptions.NoImplementationException;
-import com.serli.jderay.jsr330.exceptions.NotAnInterfaceException;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import com.serli.jderay.jsr330.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 
 public class ContainerConfig {
 
@@ -20,7 +18,7 @@ public class ContainerConfig {
     public ContainerConfig() {
     }
 
-    public void configure() throws AmbiguousImplementationsException, DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException  {
+    public void configure() throws AmbiguousImplementationsException, DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, NoSuchMethodException {
     }
 
     public BindedClass bind(Class<?> clazz) throws NotAnInterfaceException {
@@ -50,6 +48,13 @@ public class ContainerConfig {
         public AfterTo to(Class<?> clazzImpl) {
             return new AfterTo( clazzToImpl, clazzImpl, qualifiers, name );
         }
+
+        public void providedBy(Provider provider) throws AmbiguousImplementationsException, InstantiationException, NoImplementationException, IllegalAccessException, NoSuchMethodException {
+            Class<?> clazzImpl = provider.getClass().getMethod("get", null).getReturnType();
+            InheritanceManager.addInheritance(clazzToImpl, clazzImpl, name, qualifiers);
+            InheritanceManager.setProvider(clazzToImpl, name, qualifiers, provider);
+        }
+
     }
 
     public class AfterTo {

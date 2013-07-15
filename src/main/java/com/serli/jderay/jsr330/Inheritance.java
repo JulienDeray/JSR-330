@@ -4,11 +4,8 @@
 
 package com.serli.jderay.jsr330;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.inject.Provider;
+import java.util.*;
 
 class Inheritance<T> {
     
@@ -18,6 +15,7 @@ class Inheritance<T> {
     private boolean isSingleton;
     private T singletonInstance;
     private String name;
+    private Provider provider;
 
     public Inheritance(Class<?> clazz, Class<T> implementation) {
         this.toImpl = clazz;
@@ -26,6 +24,7 @@ class Inheritance<T> {
         this.isSingleton = false;
         this.singletonInstance = null;
         this.name = "";
+        this.provider = null;
     }
     
     public Inheritance(Class<?> clazz, Class<T> implementation, Class<?>[] qualifiers) {
@@ -75,9 +74,21 @@ class Inheritance<T> {
     T getSingletonInstance() {
         return singletonInstance;
     }
-    
+
+    boolean hasProvider() {
+        return this.provider == null ? false : true;
+    }
+
     @Override
     public String toString() {
         return implementation.getName();
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+    }
+
+    public Provider getProvider() {
+        return provider;
     }
 }

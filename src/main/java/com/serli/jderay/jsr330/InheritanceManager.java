@@ -6,11 +6,13 @@ package com.serli.jderay.jsr330;
 
 import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
 import com.serli.jderay.jsr330.exceptions.NoImplementationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 class InheritanceManager {
@@ -74,5 +76,16 @@ class InheritanceManager {
     
     static void reset() {
         inheritances.clear();
+    }
+
+    public static void setProvider(Class<?> clazzToImpl, String name, Class<?>[] qualifiers, Provider provider) throws NoImplementationException, AmbiguousImplementationsException {
+        List<Class<?>> listQualifiers;
+
+        if (qualifiers != null)
+            listQualifiers = new ArrayList<>(Arrays.asList(qualifiers));
+        else
+            listQualifiers = new ArrayList<>();
+
+        getInheritance(clazzToImpl, listQualifiers, name).setProvider(provider);
     }
 }
