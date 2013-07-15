@@ -48,23 +48,25 @@ public class DIContainer {
 
         if ( impl.isSingleton() ) {
             t = impl.getSingletonInstance();
-            resolveSetterInjections( t );
-            resolveFieldInjections( t );
+            resolveInjections( t );
         }
         else if ( impl.hasProvider() ) {
             Provider provider = impl.getProvider();
-            resolveSetterInjections( provider );
-            resolveFieldInjections( provider );
+            resolveInjections( provider );
 
             t = (T) provider.get();
         }
         else {
             t = dynamicallyInstantiate( impl.getImplementation() );
-            resolveSetterInjections( t );
-            resolveFieldInjections( t );
+            resolveInjections( t );
         }
 
         return t;
+    }
+
+    private <T> void resolveInjections(T t) throws IllegalAccessException, NoImplementationException, InstantiationException, FinalFieldException, NoSuchFieldException, MultipleConstructorsInjection, InvocationTargetException, AmbiguousImplementationsException {
+        resolveSetterInjections( t );
+        resolveFieldInjections( t );
     }
 
     private <T> T dynamicallyInstantiate(Class<T> clazz) throws InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException, NoSuchFieldException {
@@ -89,9 +91,6 @@ public class DIContainer {
     }
 
     private boolean parameterIsAfield(Class clazz, Class parameterClass ) throws FinalFieldException, NoSuchFieldException {
-        System.out.println(clazz.getDeclaredFields()[0]);
-        System.out.println(parameterClass.getCanonicalName());
-
         Field field = null;
         boolean ok = false;
         Field[] fields = clazz.getDeclaredFields();

@@ -4,16 +4,12 @@
 package com.serli.jderay.jsr330;
 
 import com.serli.jderay.jsr330.exceptions.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
 public class ContainerConfig {
-
-    private static final Logger logger = LoggerFactory.getLogger(ContainerConfig.class);
 
     public ContainerConfig() {
     }
@@ -22,10 +18,7 @@ public class ContainerConfig {
     }
 
     public BindedClass bind(Class<?> clazz) throws NotAnInterfaceException {
-        if ( clazz.isInterface() )
-            return new BindedClass(clazz);
-        else
-            throw new NotAnInterfaceException( clazz.getName() );
+        return new BindedClass(clazz);
     }
 
     public class QualifieredClass {
@@ -72,16 +65,7 @@ public class ContainerConfig {
             
             InheritanceManager.addInheritance(clazzToImpl, clazzImpl);
         }
-        
-        public AfterTo(Class<?> clazzToImpl, Class<?>[] qualifiers, Class<?> clazzImpl) {
-            this.clazzToImpl = clazzToImpl;
-            this.qualifiers = qualifiers;
-            this.clazzImpl = clazzImpl;
-            this.name = "";
-            
-            InheritanceManager.addInheritance(clazzToImpl, clazzImpl, qualifiers);
-        }
-        
+
         public AfterTo(Class<?> clazzToImpl, Class<?> clazzImpl, Class<?>[] qualifiers, String name) {
             this.clazzToImpl = clazzToImpl;
             this.qualifiers = qualifiers;
@@ -119,13 +103,10 @@ public class ContainerConfig {
         }
 
         private boolean isAnImplementation(Class<?> implementation) throws DoesNotImplementException {
-            Class<?>[] interfaces = implementation.getInterfaces();
-            
-            for (int i = 0; i < interfaces.length; i++) {
-                if ( interfaces[i].equals( clazzToImpl ) )
-                    return true;
-            }
-            throw new DoesNotImplementException( clazzToImpl.getName(), implementation.getName() );
+            if ( clazzToImpl.isAssignableFrom( implementation ) )
+                return true;
+            else
+                throw new DoesNotImplementException( clazzToImpl.getName(), implementation.getName() );
         }
 
         public QualifieredClass named(String name) {

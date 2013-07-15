@@ -20,7 +20,8 @@ public class TckTest extends TestCase {
         
     public static Test suite() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException, NoSuchMethodException, NoSuchFieldException {
         final DIContainer container = DIContainer.createWith( new TckConfig() );
-        
+
+        // TODO : trouver le moyen de passer une interface !!! (Car -> interface)
         Car car = container.getInstance(Car.class);
 
         return Tck.testsFor(car, false, false);

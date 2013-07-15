@@ -29,14 +29,6 @@ class InheritanceManager {
         inheritances.add( new Inheritance(clazz, impl, qualifiers, name) );
         logger.info("Inheritance added : {} ---> {}", clazz.toString(), impl.toString());
     }
-    
-    static boolean contains(Class<?> clazzToImpl) {
-        for (Inheritance inheritance : inheritances) {
-            if ( inheritance.is( clazzToImpl ) )
-                return true;
-        }
-        return false;
-    }
 
     static Inheritance getInheritance(Class<?> clazzToImpl, List<Class<?>> qualifiers, String name) throws NoImplementationException, AmbiguousImplementationsException {
         Inheritance res = null;
@@ -54,7 +46,7 @@ class InheritanceManager {
             throw new NoImplementationException( clazzToImpl.getCanonicalName() );
     }
 
-    static <T> void setSingleton(Class<?> clazzToImpl, Class<?>[] qualifiers, String name) throws NoImplementationException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+    static void setSingleton(Class<?> clazzToImpl, Class<?>[] qualifiers, String name) throws NoImplementationException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
         List<Class<?>> listQualifiers;
                 
         if (qualifiers != null) 
@@ -63,15 +55,6 @@ class InheritanceManager {
             listQualifiers = new ArrayList<>();
         
         getInheritance(clazzToImpl, listQualifiers, name).setSingleton();
-    }
-
-    static <T> boolean isSingleton(Class<T> clazz) {
-        for ( Inheritance inheritance : inheritances ) {
-            if ( inheritance.is(clazz) )
-                if ( inheritance.isSingleton() )
-                    return true;
-        }
-       return false;
     }
     
     static void reset() {
