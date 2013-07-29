@@ -43,10 +43,16 @@ public class ContainerConfig {
             return new AfterTo( clazzToImpl, clazzImpl, qualifiers, name );
         }
 
+        // TODO : test si clazzToImpl == clazzImpl
         public void providedBy(Provider provider) throws AmbiguousImplementationsException, InstantiationException, NoImplementationException, IllegalAccessException, NoSuchMethodException {
             Class<?> clazzImpl = provider.getClass().getMethod("get", null).getReturnType();
-            InheritanceManager.addInheritance(clazzToImpl, clazzImpl, name, qualifiers);
-            InheritanceManager.setProvider(clazzToImpl, name, qualifiers, provider);
+
+            if ( qualifiers.length > 0 ) {
+                InheritanceManager.addInheritance(clazzToImpl, clazzImpl, name, qualifiers);
+                InheritanceManager.setProvider(clazzToImpl, name, qualifiers);
+            }
+
+            InheritanceManager.addProvider(clazzImpl, provider);
         }
 
     }
@@ -75,7 +81,7 @@ public class ContainerConfig {
         
         public void withScope( Class<?> singleton ) throws IsNotScopeException, InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException, NoSuchMethodException, MultipleConstructorsInjection, FinalFieldException, NoSuchFieldException, InvocationTargetException {
             if ( singleton.equals( Singleton.class ) )
-                InheritanceManager.setSingleton( clazzToImpl, qualifiers, name );
+                InheritanceManager.addSingletonToPostConfigList(clazzToImpl, qualifiers, name);
             else
                 throw new IsNotScopeException( singleton.getName() );
         }
@@ -112,11 +118,11 @@ public class ContainerConfig {
             return new QualifieredClass( clazzToImpl, name, qualifiers );
         }
 
+        // TODO : test si clazzToImpl == clazzImpl
         public void providedBy(Provider provider) throws NoSuchMethodException, NoImplementationException, AmbiguousImplementationsException {
             Class<?> clazzImpl = provider.getClass().getMethod("get", null).getReturnType();
-            Class<?>[] nullQualifier = {};
-            InheritanceManager.addInheritance(clazzToImpl, clazzImpl, "", nullQualifier);
-            InheritanceManager.setProvider(clazzToImpl, "", nullQualifier, provider);
+            //InheritanceManager.addInheritance(clazzToImpl, clazzImpl, "", nullQualifier);
+            InheritanceManager.addProvider(clazzImpl, provider);
         }
     }
 }

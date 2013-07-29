@@ -30,9 +30,10 @@ public class DIContainer {
     private void init(ContainerConfig containerConfig) throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, NoSuchMethodException, MultipleConstructorsInjection, FinalFieldException, NoSuchFieldException, InvocationTargetException {
         logger.info("--------------------- Initialisation of Dependencie Injection Container ---------------------");
         containerConfig.configure();
+        InheritanceManager.postConfigSingletons();
         logger.info("---------------------------------------------------------------------------------------------");
     }
-    
+
     public <T> T getInstance( Class<T> clazz ) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException, NoSuchFieldException, NoSuchMethodException {
         T t = dynamicallyInstantiate( clazz );
         resolveSetterInjections( t );
@@ -74,25 +75,35 @@ public class DIContainer {
             for (int i = 0; i < annotatedConstructor.getParameterTypes().length; i++) {
                 Class parameterClass = annotatedConstructor.getParameterTypes()[i];
                 Annotation[] parameterAnnotations = annotatedConstructor.getParameterAnnotations()[i];
-                Class<?> providedClass = null;
                 if ( parameterIsAfield( clazz, parameterClass ) ) {
                     if ( parameterClass.isAssignableFrom(Provider.class) ) {
-                        Type t = annotatedConstructor.getGenericParameterTypes()[0];
+                        Type t = annotatedConstructor.getGenericParameterTypes()[i];
                         ParameterizedType ptype = (ParameterizedType) t;
-                        providedClass = (Class<?>) ptype.getActualTypeArguments()[0];
+                        Class providedClass = (Class<?>) ptype.getActualTypeArguments()[0];
+                        Inheritance impl = InheritanceManager.getInheritance( parameterClass, getQualifiers( parameterAnnotations ), getName( parameterAnnotations ), providedClass );
+                        newParameters[i] = impl.getProvider();
                     }
-                    Inheritance impl = InheritanceManager.getInheritance( parameterClass, getQualifiers( parameterAnnotations ), getName( parameterAnnotations ), providedClass );
-                    newParameters[i] = getInstance( impl );
+                    else {
+                        Inheritance impl = InheritanceManager.getInheritance( parameterClass, getQualifiers( parameterAnnotations ), getName( parameterAnnotations ), null );
+                        newParameters[i] = getInstance( impl );
+                    }
                 }
             }
             logger.info("@Inject on constructor : {}", annotatedConstructor.toString());
+            annotatedConstructor.setAccessible(true);
             return (T) annotatedConstructor.newInstance( newParameters );
         }
         else {
             if ( clazz.isInterface() )
                 return findEligibleClass(clazz);
             else
-                return clazz.newInstance();
+                if ( clazz.getName().contains("$") ) {
+                    Constructor constr = clazz.getDeclaredConstructors()[0];
+                    Class<?> container = constr.getParameterTypes()[0];
+                    return (T) constr.newInstance( container.newInstance() );
+                }
+                else
+                    return clazz.newInstance();
         }
     }
 
@@ -150,20 +161,25 @@ public class DIContainer {
     
     private <T> T injectFields(T t, List<Field> fields) throws IllegalArgumentException, IllegalAccessException, InstantiationException, NoImplementationException, AmbiguousImplementationsException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException, NoSuchFieldException, NoSuchMethodException {
         for (Field field : fields) {
-            Class<?> providedClass = null;
             Class<?> clazzToImpl = field.getType();
+            Inheritance impl;
 
             if ( field.getType().isAssignableFrom(Provider.class) ) {
                 Type type = field.getGenericType();
                 ParameterizedType ptype = (ParameterizedType) type;
-                providedClass = (Class<?>) ptype.getActualTypeArguments()[0];
+                Class providedClass = (Class<?>) ptype.getActualTypeArguments()[0];
+                impl = InheritanceManager.getInheritance( clazzToImpl, getQualifiers( field.getDeclaredAnnotations() ), getName( field.getDeclaredAnnotations() ), providedClass );
+
+                field.setAccessible(true);
+                field.set(t, impl.getProvider() );
+            }
+            else {
+                impl = InheritanceManager.getInheritance( clazzToImpl, getQualifiers( field.getDeclaredAnnotations() ), getName( field.getDeclaredAnnotations() ), null );
+
+                field.setAccessible(true);
+                field.set(t, getInstance( impl ) );
             }
 
-            Inheritance impl = InheritanceManager.getInheritance( clazzToImpl, getQualifiers( field.getDeclaredAnnotations() ), getName( field.getDeclaredAnnotations() ), providedClass );
-            
-            field.setAccessible(true);
-           
-            field.set(t, getInstance( impl ) );
             logger.info("@Inject : {} --> {}", clazzToImpl, impl);
 
             field.setAccessible(false);

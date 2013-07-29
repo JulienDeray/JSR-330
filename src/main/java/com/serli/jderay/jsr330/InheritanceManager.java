@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 class InheritanceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceManager.class);
     private static final List<Inheritance> inheritances = new ArrayList<>();
+    private static final List<Inheritance> singletonPostConfigList = new ArrayList<>();
+    private static final Map<Class, Provider> listProviders = new HashMap<>();
 
     static void addInheritance(Class<?> clazz, Class<?> impl, Class<?>... qualifiers ) {
         inheritances.add( new Inheritance(clazz, impl, qualifiers));
@@ -33,7 +33,6 @@ class InheritanceManager {
     }
 
     static Inheritance getInheritance(Class<?> clazzToImpl, List<Class<?>> qualifiers, String name, Class<?> providedClass) throws NoImplementationException, AmbiguousImplementationsException, NoSuchMethodException {
-        boolean testProvider = false;
         Class<?> clazzToImplTemp = clazzToImpl;
 
         if (providedClass != null) {
@@ -46,12 +45,11 @@ class InheritanceManager {
         }
         else if ( clazzToImpl.isAssignableFrom(Provider.class) ) {
             clazzToImplTemp = clazzToImpl.getClass().getMethod("get", new Class[]{}).getReturnType();
-            testProvider = true;
         }
 
         Inheritance res = null;
         for ( Inheritance inheritance : inheritances ) {
-            if ( inheritance.is( clazzToImplTemp ) && inheritance.isQualifieredBy( qualifiers ) && inheritance.isNamedAs( name ) && ( inheritance.hasProvider() == testProvider ) )
+            if ( inheritance.is( clazzToImplTemp ) && inheritance.isQualifieredBy( qualifiers ) && inheritance.isNamedAs( name ) )
                 if ( res == null )
                     res = inheritance;
                 else
@@ -63,22 +61,24 @@ class InheritanceManager {
             throw new NoImplementationException( clazzToImpl.getCanonicalName() );
     }
 
-    static void setSingleton(Class<?> clazzToImpl, Class<?>[] qualifiers, String name) throws NoImplementationException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, NoSuchMethodException, InvocationTargetException, MultipleConstructorsInjection, NoSuchFieldException, FinalFieldException {
-        List<Class<?>> listQualifiers;
-
-        if (qualifiers != null)
-            listQualifiers = new ArrayList<>(Arrays.asList(qualifiers));
-        else
-            listQualifiers = new ArrayList<>();
-
-        getInheritance(clazzToImpl, listQualifiers, name, null).setSingleton();
-    }
-
     static void reset() {
         inheritances.clear();
     }
 
-    public static void setProvider(Class<?> clazzToImpl, String name, Class<?>[] qualifiers, Provider provider) throws NoImplementationException, AmbiguousImplementationsException, NoSuchMethodException {
+    public static void addProvider(Class<?> clazzToImpl, Provider provider) throws NoImplementationException, AmbiguousImplementationsException, NoSuchMethodException {
+        listProviders.put(clazzToImpl, provider);
+    }
+
+    public static Provider getProvider( Class<?> clazz ) {
+        if ( listProviders.containsKey( clazz ) ) {
+            Provider res = listProviders.get( clazz );
+            return res;
+        }
+        else
+            return null;
+    }
+
+    public static void addSingletonToPostConfigList(Class<?> clazzToImpl, Class<?>[] qualifiers, String name) throws NoSuchMethodException, AmbiguousImplementationsException, NoImplementationException {
         List<Class<?>> listQualifiers;
 
         if (qualifiers != null)
@@ -86,6 +86,24 @@ class InheritanceManager {
         else
             listQualifiers = new ArrayList<>();
 
-        getInheritance(clazzToImpl, listQualifiers, name, null).setProvider(provider);
+        singletonPostConfigList.add( getInheritance(clazzToImpl, listQualifiers, name, null) );
+    }
+
+    public static void postConfigSingletons() throws NoImplementationException, InstantiationException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, MultipleConstructorsInjection, NoSuchFieldException, FinalFieldException, AmbiguousImplementationsException {
+        for ( Inheritance inheritance : singletonPostConfigList ) {
+            inheritance.setSingleton();
+        }
+    }
+
+    public static void setProvider(Class<?> clazzToImpl, String name, Class<?>[] qualifiers) throws NoSuchMethodException, AmbiguousImplementationsException, NoImplementationException {
+        ArrayList<Class<?>> listQualifiers;
+
+        if (qualifiers != null)
+            listQualifiers = new ArrayList<>(Arrays.asList(qualifiers));
+        else
+            listQualifiers = new ArrayList<>();
+
+        getInheritance(clazzToImpl, listQualifiers, name, null).setProvider();
+
     }
 }

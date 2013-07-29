@@ -21,7 +21,7 @@ class Inheritance<T> {
     private boolean isSingleton;
     private T singletonInstance;
     private String name;
-    private Provider provider;
+    private boolean needsProvider;
 
     public Inheritance(Class<?> clazz, Class<T> implementation) {
         this.toImpl = clazz;
@@ -30,7 +30,7 @@ class Inheritance<T> {
         this.isSingleton = false;
         this.singletonInstance = null;
         this.name = "";
-        this.provider = null;
+        this.needsProvider = false;
     }
     
     public Inheritance(Class<?> clazz, Class<T> implementation, Class<?>[] qualifiers) {
@@ -44,7 +44,7 @@ class Inheritance<T> {
     }
     
     boolean is(Class<?> clazzToImpl) {
-        return clazzToImpl.equals(toImpl) ? true : false;
+        return clazzToImpl.equals(toImpl);
     }
 
     boolean isQualifieredBy(List<Class<?>> qualifiers) {
@@ -56,12 +56,12 @@ class Inheritance<T> {
             Set<Object> set2 = new HashSet<>();
             set2.addAll(this.qualifiers);
             
-            return set1.equals(set2) ? true : false;
+            return set1.equals(set2);
         }
     }
 
     boolean isNamedAs(String name) {
-        return (name.equals(this.name) || name.equals("")) ? true : false;
+        return (name.equals(this.name) || name.equals(""));
     }
     
     Class<T> getImplementation() {
@@ -71,7 +71,7 @@ class Inheritance<T> {
     void setSingleton() throws InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException, FinalFieldException, NoSuchMethodException, MultipleConstructorsInjection, InvocationTargetException, NoSuchFieldException {
         this.isSingleton = true;
         DIContainer diContainer = new DIContainer();
-        this.singletonInstance = diContainer.getInstance( implementation );
+        this.singletonInstance = diContainer.getInstance(implementation);
     }
     
     boolean isSingleton() {
@@ -83,7 +83,7 @@ class Inheritance<T> {
     }
 
     boolean hasProvider() {
-        return this.provider == null ? false : true;
+        return getProvider() != null ;
     }
 
     @Override
@@ -91,11 +91,11 @@ class Inheritance<T> {
         return implementation.getName();
     }
 
-    public void setProvider(Provider provider) {
-        this.provider = provider;
+    public Provider getProvider() {
+        return InheritanceManager.getProvider( this.toImpl );
     }
 
-    public Provider getProvider() {
-        return provider;
+    public void setProvider() {
+        this.needsProvider = true;
     }
 }

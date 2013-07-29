@@ -52,8 +52,10 @@ public class TckConfig extends ContainerConfig {
 
         bind(FuelTank.class).to(FuelTank.class);
 
-        bind(Seat.class).annotatedWith(Singleton.class).to(Seat.class).withScope(Singleton.class);
+        bind(Seat.class).to(Seat.class).withScope(Singleton.class);
+        //bind(Seat.class).to(Seat.class);
 
-        bind(Cupholder.class).annotatedWith(Singleton.class).to(Cupholder.class).withScope(Singleton.class);
+        bind(Cupholder.class).to(Cupholder.class).withScope(Singleton.class);
+        //bind(Cupholder.class).to(Cupholder.class);
     }
 }
