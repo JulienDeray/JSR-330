@@ -4,22 +4,21 @@
 
 package com.serli.jderay.jsr330;
 
-import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
-import com.serli.jderay.jsr330.exceptions.DoesNotImplementException;
-import com.serli.jderay.jsr330.exceptions.NoImplementationException;
-import com.serli.jderay.jsr330.exceptions.NotAnInterfaceException;
+import com.serli.jderay.jsr330.exceptions.*;
 import org.atinject.tck.auto.*;
 import org.atinject.tck.auto.accessories.Cupholder;
 import org.atinject.tck.auto.accessories.SpareTire;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.lang.reflect.InvocationTargetException;
 
 
 public class TckConfig extends ContainerConfig {
 
     @Override
-    public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IllegalAccessException, AmbiguousImplementationsException, InstantiationException, NoSuchMethodException {
+    public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IllegalAccessException, AmbiguousImplementationsException, InstantiationException, NoSuchMethodException, IsNotScopeException, InvocationTargetException, MultipleConstructorsInjection, NoSuchFieldException, FinalFieldException {
         
         bind(Seat.class).annotatedWith(Drivers.class).to(DriversSeat.class);
         
@@ -29,8 +28,19 @@ public class TckConfig extends ContainerConfig {
             @Inject
             private SpareTire tire;
 
+            @Override
             public Tire get() {
-                return (Tire) tire;
+                return tire;
+            }
+        });
+
+        bind(Seat.class).providedBy(new Provider<Seat>() {
+            @Inject
+            private Seat seat;
+
+            @Override
+            public Seat get() {
+                return seat;
             }
         });
         
@@ -42,8 +52,8 @@ public class TckConfig extends ContainerConfig {
 
         bind(FuelTank.class).to(FuelTank.class);
 
-        bind(Seat.class).to(Seat.class);
+        bind(Seat.class).annotatedWith(Singleton.class).to(Seat.class).withScope(Singleton.class);
 
-        bind(Cupholder.class).to(Cupholder.class);
+        bind(Cupholder.class).annotatedWith(Singleton.class).to(Cupholder.class).withScope(Singleton.class);
     }
 }

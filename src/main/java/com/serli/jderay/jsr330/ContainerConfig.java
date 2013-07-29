@@ -8,13 +8,14 @@ import com.serli.jderay.jsr330.exceptions.*;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.lang.reflect.InvocationTargetException;
 
 public class ContainerConfig {
 
     public ContainerConfig() {
     }
 
-    public void configure() throws AmbiguousImplementationsException, DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+    public void configure() throws AmbiguousImplementationsException, DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, MultipleConstructorsInjection, NoSuchFieldException, FinalFieldException {
     }
 
     public BindedClass bind(Class<?> clazz) throws NotAnInterfaceException {
@@ -54,12 +55,10 @@ public class ContainerConfig {
 
         Class<?> clazzToImpl;
         Class<?>[] qualifiers;
-        Class<?> clazzImpl;
         String name;
         
         public AfterTo(Class<?> clazzToImpl, Class<?> clazzImpl) {
             this.clazzToImpl = clazzToImpl;
-            this.clazzImpl = clazzImpl;
             this.qualifiers = null;
             this.name = "";
             
@@ -69,13 +68,12 @@ public class ContainerConfig {
         public AfterTo(Class<?> clazzToImpl, Class<?> clazzImpl, Class<?>[] qualifiers, String name) {
             this.clazzToImpl = clazzToImpl;
             this.qualifiers = qualifiers;
-            this.clazzImpl = clazzImpl;
             this.name = name;
             
             InheritanceManager.addInheritance(clazzToImpl, clazzImpl, name, qualifiers);
         }
         
-        public void withScope( Class<?> singleton ) throws IsNotScopeException, InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException {
+        public void withScope( Class<?> singleton ) throws IsNotScopeException, InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException, NoSuchMethodException, MultipleConstructorsInjection, FinalFieldException, NoSuchFieldException, InvocationTargetException {
             if ( singleton.equals( Singleton.class ) )
                 InheritanceManager.setSingleton( clazzToImpl, qualifiers, name );
             else
@@ -112,6 +110,13 @@ public class ContainerConfig {
         public QualifieredClass named(String name) {
             Class<?>[] qualifiers = {Named.class};
             return new QualifieredClass( clazzToImpl, name, qualifiers );
+        }
+
+        public void providedBy(Provider provider) throws NoSuchMethodException, NoImplementationException, AmbiguousImplementationsException {
+            Class<?> clazzImpl = provider.getClass().getMethod("get", null).getReturnType();
+            Class<?>[] nullQualifier = {};
+            InheritanceManager.addInheritance(clazzToImpl, clazzImpl, "", nullQualifier);
+            InheritanceManager.setProvider(clazzToImpl, "", nullQualifier, provider);
         }
     }
 }

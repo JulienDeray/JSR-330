@@ -4,7 +4,13 @@
 
 package com.serli.jderay.jsr330;
 
+import com.serli.jderay.jsr330.exceptions.AmbiguousImplementationsException;
+import com.serli.jderay.jsr330.exceptions.FinalFieldException;
+import com.serli.jderay.jsr330.exceptions.MultipleConstructorsInjection;
+import com.serli.jderay.jsr330.exceptions.NoImplementationException;
+
 import javax.inject.Provider;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 class Inheritance<T> {
@@ -55,16 +61,17 @@ class Inheritance<T> {
     }
 
     boolean isNamedAs(String name) {
-        return name.equals(this.name) ? true : false;
+        return (name.equals(this.name) || name.equals("")) ? true : false;
     }
     
     Class<T> getImplementation() {
         return implementation;
     }
 
-    void setSingleton() throws InstantiationException, IllegalAccessException {
+    void setSingleton() throws InstantiationException, IllegalAccessException, NoImplementationException, AmbiguousImplementationsException, FinalFieldException, NoSuchMethodException, MultipleConstructorsInjection, InvocationTargetException, NoSuchFieldException {
         this.isSingleton = true;
-        this.singletonInstance = implementation.newInstance();
+        DIContainer diContainer = new DIContainer();
+        this.singletonInstance = diContainer.getInstance( implementation );
     }
     
     boolean isSingleton() {

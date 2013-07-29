@@ -93,7 +93,7 @@ public class ConstructorInjectionTest extends TestCase {
     public void testSingletonInjection() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException, NoSuchMethodException, NoSuchFieldException {
         ContainerConfig config = new ContainerConfig() {
             @Override
-            public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
+            public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, NoSuchMethodException, InvocationTargetException, MultipleConstructorsInjection, NoSuchFieldException, FinalFieldException {
                 bind(Name2Service.class).annotatedWith(LeJoliSingleton.class).to(SingleServiceImpl.class).withScope(Singleton.class);
             }
         };
@@ -114,23 +114,5 @@ public class ConstructorInjectionTest extends TestCase {
         NamedInject mt1 = container.getInstance(NamedInject.class);
         
         assertEquals("Module 2 [Named : \"CocoLasticot\"] -> yes it works !", mt1.shootCocoLasticot());
-    }
-    
-    public void testFinalException() throws DoesNotImplementException, NotAnInterfaceException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException, IllegalArgumentException, InvocationTargetException, MultipleConstructorsInjection, FinalFieldException, NoSuchMethodException, NoSuchFieldException {
-        ContainerConfig config = new ContainerConfig() {
-            @Override
-            public void configure() throws NotAnInterfaceException, DoesNotImplementException, NoImplementationException, IsNotScopeException, InstantiationException, IllegalAccessException, AmbiguousImplementationsException {
-                bind(Name2Service.class).to(FinalServiceImpl.class);
-            }
-        };
-        DIContainer container = DIContainer.createWith(config);
-        
-        try {
-            FinalInject mt1 = container.getInstance(FinalInject.class);
-            fail();
-        }
-        catch(FinalFieldException e) {
-            assertEquals(new FinalFieldException().getMessage(), e.getMessage());
-        }
     }
 }
